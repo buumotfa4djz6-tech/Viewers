@@ -1,0 +1,82 @@
+version: '3.8'
+
+services:
+  # OHIF Viewer
+  ohif-viewer:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:80"
+    environment:
+      - NODE_ENV=production
+      - KEYCLOAK_URL=http://keycloak:8080
+      - KEYCLOAK_REALM=pacs
+      - KEYCLOAK_CLIENT_ID=ohif-viewer
+      - DCM4CHEE_URL=http://dcm4chee:8080
+      - TENANT_ID=${TENANT_ID:-default}
+    depends_on:
+      - keycloak
+      - dcm4chee
+    volumes:
+      - ./config:/app/config
+    networks:
+      - pacs-network
+
+  # Keycloak
+  keycloak:
+    image: quay.io/keycloak/keycloak:latest
+    ports:
+      - "8080:8080"
+    environment:
+      - KEYCLOAK_ADMIN=admin
+      - KEYCLOAK_ADMIN_PASSWORD=admin
+      - DB_VENDOR=postgres
+      - DB_ADDR=postgres
+      - DB_DATABASE=keycloak
+      - DB_USER=keycloak
+      - DB_PASSWORD=keycloak
+    depends_on:
+      - postgres
+    volumes:
+      - ./keycloak:/opt/keycloak/data
+    networks:
+      - pacs-network
+
+  # DCM4CHEE
+  dcm4chee:
+    image: dcm4che/dcm4chee-arc-psql:latest
+    ports:
+      - "8081:8080"
+    environment:
+      - POSTGRES_HOST=postgres
+      - POSTGRES_DB=pacsdb
+      - POSTGRES_USER=pacs
+      - POSTGRES_PASSWORD=pacs
+    depends_on:
+      - postgres
+    volumes:
+      - ./dcm4chee:/opt/dcm4chee/server/default
+    networks:
+      - pacs-network
+
+  # PostgreSQL
+  postgres:
+    image: postgres:14
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_DB=pacsdb
+      - POSTGRES_USER=pacs
+      - POSTGRES_PASSWORD=pacs
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - pacs-network
+
+volumes:
+  postgres_data:
+
+networks:
+  pacs-network:
+    driver: bridge

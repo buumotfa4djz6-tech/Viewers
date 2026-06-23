@@ -1,0 +1,113 @@
+window.config = {
+  routerBasename: '/',
+  extensions: [
+    '@ohif/extension-default',
+    '@ohif/extension-cornerstone',
+    '@ohif/extension-cornerstone-dicom-sr',
+    '@ohif/extension-measurement-tracking',
+    '@ohif/extension-rbac',
+    '@ohif/extension-multitenant',
+    '@ohif/extension-report-workflow',
+    '@ohif/extension-worklist-enhance',
+    '@ohif/extension-analytics',
+  ],
+  modes: ['@ohif/mode-pacs-client'],
+  showStudyList: true,
+  maxNumberOfWebWorkers: 3,
+  showLoadingIndicator: true,
+  experimentalStudyBrowserSort: false,
+  strictZSpacingForVolumeViewport: true,
+  investigationalUseDialog: {
+    option: 'configure',
+  },
+  defaultDataSourceName: 'dicomweb',
+  dataSources: [
+    {
+      namespace: '@ohif/extension-default.dataModule.dicomweb',
+      sourceName: 'dicomweb',
+      configuration: {
+        friendlyName: 'DCM4CHEE',
+        name: 'DCM4CHEE',
+        wadoUriRoot: '/wado',
+        qidoRoot: '/qido',
+        wadoRoot: '/wado',
+        qidoSupportsIncludeField: true,
+        imageRendering: 'wadors',
+        thumbnailRendering: 'wadors',
+        enableStudyLazyLoad: true,
+        supportsFuzzyMatching: true,
+        supportsWildcard: true,
+        staticWado: true,
+        singlepart: 'bulkdata,video',
+        bulkDataURI: {
+          enabled: true,
+          relativeResolution: 'studies',
+        },
+      },
+    },
+  ],
+  oidc: [
+    {
+      authority: 'http://keycloak:8080/realms/pacs',
+      client_id: 'ohif-viewer',
+      redirect_uri: '/callback',
+      response_type: 'code',
+      scope: 'openid profile email roles',
+      post_logout_redirect_uri: '/logout',
+      automaticSilentRenew: true,
+      silent_redirect_uri: '/silent-refresh',
+      filterProtocolClaims: true,
+      loadUserInfo: true,
+    },
+  ],
+  // Multi-tenant configuration
+  tenants: [
+    { id: 'default', name: 'Default Hospital', description: 'Default tenant' },
+    { id: 'hospital-a', name: 'Hospital A', description: 'Hospital A' },
+    { id: 'hospital-b', name: 'Hospital B', description: 'Hospital B' },
+  ],
+  // Report templates
+  reportTemplates: [
+    {
+      id: 'ct-template',
+      name: 'CT Report Template',
+      modality: 'CT',
+    },
+    {
+      id: 'mri-template',
+      name: 'MRI Report Template',
+      modality: 'MR',
+    },
+    {
+      id: 'xray-template',
+      name: 'X-Ray Report Template',
+      modality: 'CR',
+    },
+  ],
+  // Study prefetcher
+  studyPrefetcher: {
+    enabled: true,
+    displaySetsCount: 2,
+    prevent: true,
+  },
+  // Hotkeys
+  hotkeys: [
+    { commandName: 'incrementActiveViewport', label: 'Next Viewport', keys: ['right'] },
+    { commandName: 'decrementActiveViewport', label: 'Previous Viewport', keys: ['left'] },
+    { commandName: 'rotateViewportCW', label: 'Rotate Right', keys: ['r'] },
+    { commandName: 'rotateViewportCCW', label: 'Rotate Left', keys: ['l'] },
+    { commandName: 'invertViewport', label: 'Invert', keys: ['i'] },
+    { commandName: 'flipViewportHorizontal', label: 'Flip Horizontally', keys: ['h'] },
+    { commandName: 'flipViewportVertical', label: 'Flip Vertically', keys: ['v'] },
+    { commandName: 'scaleUpViewport', label: 'Zoom In', keys: ['+'] },
+    { commandName: 'scaleDownViewport', label: 'Zoom Out', keys: ['-'] },
+    { commandName: 'fitViewportToWindow', label: 'Zoom to Fit', keys: ['='] },
+    { commandName: 'resetViewport', label: 'Reset', keys: ['space'] },
+    { commandName: 'nextImage', label: 'Next Image', keys: ['down'] },
+    { commandName: 'previousImage', label: 'Previous Image', keys: ['up'] },
+    { commandName: 'firstImage', label: 'First Image', keys: ['home'] },
+    { commandName: 'lastImage', label: 'Last Image', keys: ['end'] },
+    { commandName: 'nextViewportDisplaySet', label: 'Next Series', keys: ['pageup'] },
+    { commandName: 'previousViewportDisplaySet', label: 'Previous Series', keys: ['pagedown'] },
+  ],
+};
