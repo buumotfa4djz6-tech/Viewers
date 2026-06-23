@@ -1,0 +1,27 @@
+{
+  "name": "@ohif/extension-multitenant",
+  "version": "1.0.0",
+  "description": "Multi-tenant support extension for OHIF",
+  "author": "PACS Client Team",
+  "license": "MIT",
+  "main": "src/index.ts",
+  "module": "src/index.ts",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "dev": "echo 'dev'",
+    "build": "echo 'build'"
+  },
+  "peerDependencies": {
+    "@ohif/core": "workspace:*",
+    "@ohif/ui-next": "workspace:*",
+    "react": "18.3.1",
+    "react-dom": "18.3.1"
+  },
+  "dependencies": {},
+  "devDependencies": {},
+  "keywords": [
+    "ohif-extension"
+  ]
+}
