@@ -1,6 +1,45 @@
 import React, { createContext, useCallback, useContext, useEffect, useReducer } from 'react';
 import PropTypes from 'prop-types';
 
+/**
+ * Parse JWT token to extract user roles
+ */
+function parseJwtRoles(token: string): string[] {
+  try {
+    const base64Url = token.split('.')[1];
+    if (!base64Url) return [];
+
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    const jsonPayload = decodeURIComponent(
+      atob(base64)
+        .split('')
+        .map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+        .join('')
+    );
+
+    const payload = JSON.parse(jsonPayload);
+    const realmRoles = payload.realm_access?.roles || [];
+    const clientRoles: string[] = [];
+
+    if (payload.resource_access) {
+      Object.values(payload.resource_access).forEach((access: any) => {
+        if (access.roles) {
+          clientRoles.push(...access.roles);
+        }
+      });
+    }
+
+    // Combine all roles and remove duplicates, filter out default Keycloak roles
+    const allRoles = [...new Set([...realmRoles, ...clientRoles])];
+    return allRoles.filter(
+      (role: string) => !['default-roles-pacs', 'offline_access', 'uma_authorization'].includes(role)
+    );
+  } catch (error) {
+    console.warn('Failed to parse JWT token for roles:', error);
+    return [];
+  }
+}
+
 const DEFAULT_STATE = {
   user: null,
   enabled: false,
@@ -40,13 +79,23 @@ export function UserAuthenticationProvider({ children, service }) {
   const getState = useCallback(() => userAuthenticationState, [userAuthenticationState]);
 
   const setUser = useCallback(
-    user =>
+    user => {
+      // Extract roles from JWT token if available
+      const enhancedUser = user ? { ...user } : null;
+      if (enhancedUser && enhancedUser.access_token) {
+        const roles = parseJwtRoles(enhancedUser.access_token);
+        if (roles.length > 0) {
+          enhancedUser.roles = roles;
+        }
+      }
+
       dispatch({
         type: 'SET_USER',
         payload: {
-          user,
+          user: enhancedUser,
         },
-      }),
+      });
+    },
     [dispatch]
   );
 
